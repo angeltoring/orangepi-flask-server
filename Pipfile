@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+pyserial = "*"
+python-dotenv = "*"
+
+[dev-packages]
+
+[scripts]
+start = "flask run"
+
+[requires]
+python_version = "3.1"
