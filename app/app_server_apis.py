@@ -20,9 +20,8 @@ headers = {'Content-Type': 'application/json'}
 
 def set_variables(payload):
     try:
-        # url = os.getenv('API_URL')+f"/update-variables/:{os.getenv('PLANT_ID')}"
-        url = "https://nft-hydrophonic-delta.vercel.app/update-variables/1"
-        # url = "https://angeltoring-musical-train-x7qx56wg6p4hvxgj-40531.preview.app.github.dev/update-variables/1"
+        url = os.getenv('API_URL')+f"/update-variables/:{os.getenv('PLANT_ID')}"
+        # url = "https://nft-hydrophonic-delta.vercel.app/update-variables/1"
         payload = json.dumps(payload)
         response = requests.request("PUT", url, headers=headers, data=payload)
         print(response)

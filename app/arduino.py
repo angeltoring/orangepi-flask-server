@@ -5,6 +5,8 @@ from .codes import send_codes, receive_codes
 import paho.mqtt.client as mqtt
 import time
 from .object_detection import capture_and_send_frame
+import requests
+import os
 
 # Open the serial connection.
 # In Ubuntu or any other Linux-based system, the Arduino board usually connects to the serial port named like /dev/ttyACM0 or /dev/ttyUSB0. 
@@ -79,23 +81,48 @@ def start_serial_comm():
     receive_thread.join()
     detection_thread.join()
 
-client = mqtt.Client()
-client.username_pw_set("dqjzgogh", "bhZjcIOCcqWP")  # replace with your CloudMQTT username and password
+# Cloud server details
+check_interval = 1.5  # Check every 5 seconds (adjust as needed)
+def check_for_events():
+    url = '/check-code'
 
-def on_message(client, userdata, msg):
-    command = msg.payload.decode()
-    print(command)
-    send_data(command)
+    response = requests.get(os.getenv('API_URL') + url)
+    response.raise_for_status()
+    data = response.json()
 
-client.on_message = on_message
-client.connect("driver.cloudmqtt.com", 18915)  # replace with your CloudMQTT server and port
-client.subscribe("commands")
+    if len(data['data']) == 1:
+        try:
+            # Process the received events as needed
+            print('Response from server:', data)
+            send_data(data['data'])
+        except requests.exceptions.RequestException as e:
+            print('Error decoding JSON:', e)
 
-def start_mqtt_client():
-    try:
-        client.loop_start()
-    except Exception as e:
-        print(f"Error starting MQTT client: {e}")
 
-start_mqtt_client()
-start_serial_comm()
+def command_from_app():   
+    # Set up an interval to periodically check for new events
+    while True:
+        check_for_events()
+        time.sleep(check_interval)    
+
+start_serial_comm()  
+command_from_app()
+# client = mqtt.Client()
+# client.username_pw_set("dqjzgogh", "bhZjcIOCcqWP")  # replace with your CloudMQTT username and password
+
+# def on_message(client, userdata, msg):
+#     command = msg.payload.decode()
+#     print(command)
+#     send_data(command)
+
+# client.on_message = on_message
+# client.connect("driver.cloudmqtt.com", 18915)  # replace with your CloudMQTT server and port
+# client.subscribe("commands")
+
+# def start_mqtt_client():
+#     try:
+#         client.loop_start()
+#     except Exception as e:
+#         print(f"Error starting MQTT client: {e}")
+
+# start_mqtt_client()
